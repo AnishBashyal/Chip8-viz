@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <array>
+#include <string> 
 
 class Chip8 {
 public:
@@ -15,6 +16,10 @@ public:
     // Stack
     std::array<uint16_t, 16> stack{};
     uint8_t sp{0};                   // Stack Pointer
+    
+    uint16_t opcode{0};              // Current instruction
 
     Chip8();
+    bool loadROM(const std::string& filename);
+    void fetchInstruction();
 };
