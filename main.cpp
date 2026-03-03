@@ -20,10 +20,10 @@ int main() {
         std::cout << "ROM loaded successfully.\n\n";
         
         emulator.fetchInstruction();
-        std::cout << "Instruction 1: 0x" << std::hex << emulator.opcode << "\n";
+        emulator.decodeInstruction();
 
         emulator.fetchInstruction();
-        std::cout << "Instruction 2: 0x" << std::hex << emulator.opcode << "\n";
+        emulator.decodeInstruction();
     } else {
         std::cout << "Failed to load ROM.\n";
     }

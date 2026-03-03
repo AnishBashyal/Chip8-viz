@@ -1,6 +1,7 @@
 #include "Chip8.h"
 #include <fstream>
 #include <vector>
+#include <iostream>
 
 Chip8::Chip8() {
     // The program counter starts at 0x200
@@ -38,4 +39,21 @@ void Chip8::fetchInstruction() {
     
     // Increment the Program Counter by 2 to prepare for the next instruction
     pc += 2;
+}
+
+void Chip8::decodeInstruction() {
+    uint8_t firstNibble = (opcode & 0xF000) >> 12;
+    uint8_t x = (opcode & 0x0F00) >> 8;
+    uint8_t y = (opcode & 0x00F0) >> 4;
+    uint8_t n = opcode & 0x000F;
+    uint8_t kk = opcode & 0x00FF;
+    uint16_t nnn = opcode & 0x0FFF;
+
+    std::cout << "Decoding opcode 0x" << std::hex << opcode << std::dec << "\n";
+    std::cout << "  first nibble: 0x" << std::hex << static_cast<unsigned>(firstNibble) << std::dec << "\n";
+    std::cout << "  x: V" << static_cast<unsigned>(x)
+              << "  y: V" << static_cast<unsigned>(y)
+              << "  n: " << static_cast<unsigned>(n)
+              << "  kk: 0x" << std::hex << static_cast<unsigned>(kk)
+              << "  nnn: 0x" << std::hex << nnn << std::dec << "\n";
 }
