@@ -62,8 +62,15 @@ void Chip8::executeInstruction() {
     uint8_t firstNibble = (opcode & 0xF000) >> 12;
     uint8_t x = (opcode & 0x0F00) >> 8;
     uint8_t kk = opcode & 0x00FF;
+    uint16_t nnn = opcode & 0x0FFF;
 
     switch (firstNibble) {
+        case 0xA:
+            I = nnn;
+            std::cout << "Executing: LD I, 0x" << std::hex << nnn << std::dec << "\n";
+            std::cout << "  -> I now = " << I << "\n";
+            break;
+
         case 0x6:
             V[x] = kk;
             std::cout << "Executing: LD V" << static_cast<unsigned>(x)
