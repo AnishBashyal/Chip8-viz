@@ -23,4 +23,6 @@ public:
     bool loadROM(const std::string& filename);
     void fetchInstruction();
     void decodeInstruction();
+
+    void executeInstruction();
 };

@@ -57,3 +57,24 @@ void Chip8::decodeInstruction() {
               << "  kk: 0x" << std::hex << static_cast<unsigned>(kk)
               << "  nnn: 0x" << std::hex << nnn << std::dec << "\n";
 }
+
+void Chip8::executeInstruction() {
+    uint8_t firstNibble = (opcode & 0xF000) >> 12;
+    uint8_t x = (opcode & 0x0F00) >> 8;
+    uint8_t kk = opcode & 0x00FF;
+
+    switch (firstNibble) {
+        case 0x6:
+            V[x] = kk;
+            std::cout << "Executing: LD V" << static_cast<unsigned>(x)
+                      << ", 0x" << std::hex << static_cast<unsigned>(kk) << std::dec << "\n";
+            std::cout << "  -> V" << static_cast<unsigned>(x)
+                      << " now = " << static_cast<unsigned>(V[x]) << "\n";
+            break;
+
+        default:
+            std::cout << "Execute: unimplemented opcode 0x"
+                      << std::hex << opcode << std::dec << "\n";
+            break;
+    }
+}

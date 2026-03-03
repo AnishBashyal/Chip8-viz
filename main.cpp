@@ -21,9 +21,11 @@ int main() {
         
         emulator.fetchInstruction();
         emulator.decodeInstruction();
+        emulator.executeInstruction();
 
         emulator.fetchInstruction();
         emulator.decodeInstruction();
+        emulator.executeInstruction();
     } else {
         std::cout << "Failed to load ROM.\n";
     }
