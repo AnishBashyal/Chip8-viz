@@ -25,4 +25,5 @@ public:
     void decodeInstruction();
 
     void executeInstruction();
+    void step();
 };

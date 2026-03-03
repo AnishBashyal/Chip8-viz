@@ -85,3 +85,9 @@ void Chip8::executeInstruction() {
             break;
     }
 }
+
+void Chip8::step() {
+    fetchInstruction();
+    decodeInstruction();
+    executeInstruction();
+}

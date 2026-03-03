@@ -18,14 +18,9 @@ int main() {
 
     if (emulator.loadROM("dummy_rom.ch8")) {
         std::cout << "ROM loaded successfully.\n\n";
-        
-        emulator.fetchInstruction();
-        emulator.decodeInstruction();
-        emulator.executeInstruction();
 
-        emulator.fetchInstruction();
-        emulator.decodeInstruction();
-        emulator.executeInstruction();
+        emulator.step();
+        emulator.step();
     } else {
         std::cout << "Failed to load ROM.\n";
     }
