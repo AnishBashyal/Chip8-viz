@@ -79,6 +79,14 @@ void Chip8::executeInstruction() {
                       << " now = " << static_cast<unsigned>(V[x]) << "\n";
             break;
 
+        case 0x7:
+            V[x] = static_cast<uint8_t>(V[x] + kk);
+            std::cout << "Executing: ADD V" << static_cast<unsigned>(x)
+                      << ", 0x" << std::hex << static_cast<unsigned>(kk) << std::dec << "\n";
+            std::cout << "  -> V" << static_cast<unsigned>(x)
+                      << " now = " << static_cast<unsigned>(V[x]) << "\n";
+            break;
+
         default:
             std::cout << "Execute: unimplemented opcode 0x"
                       << std::hex << opcode << std::dec << "\n";
