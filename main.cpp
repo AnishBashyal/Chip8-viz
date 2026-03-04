@@ -8,7 +8,8 @@ void createDummyROM() {
     uint8_t bytes[] = {
         0xA2, 0x2A, // LD I, 0x22A
         0x60, 0x0C, // LD V0, 0x0C
-        0x70, 0x05  // ADD V0, 0x05
+        0x70, 0x05, // ADD V0, 0x05
+        0x12, 0x08   // JP 0x208
     };
     file.write(reinterpret_cast<char*>(bytes), sizeof(bytes));
     file.close();
@@ -23,6 +24,7 @@ int main() {
     if (emulator.loadROM("dummy_rom.ch8")) {
         std::cout << "ROM loaded successfully.\n\n";
 
+        emulator.step();
         emulator.step();
         emulator.step();
         emulator.step();

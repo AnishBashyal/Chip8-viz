@@ -65,6 +65,12 @@ void Chip8::executeInstruction() {
     uint16_t nnn = opcode & 0x0FFF;
 
     switch (firstNibble) {
+        case 0x1:
+            pc = nnn;
+            std::cout << "Executing: JP 0x" << std::hex << nnn << std::dec << "\n";
+            std::cout << "  -> pc now = " << pc << "\n";
+            break;
+
         case 0xA:
             I = nnn;
             std::cout << "Executing: LD I, 0x" << std::hex << nnn << std::dec << "\n";
