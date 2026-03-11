@@ -65,9 +65,29 @@ void Chip8::executeInstruction() {
     uint16_t nnn = opcode & 0x0FFF;
 
     switch (firstNibble) {
+        case 0x0:
+            if (opcode == 0x00EE) {
+                sp--;
+                pc = stack[sp];
+                std::cout << "Executing: RET\n";
+                std::cout << "  -> pc now = " << pc << "\n";
+            } else {
+                std::cout << "Execute: unimplemented opcode 0x"
+                          << std::hex << opcode << std::dec << "\n";
+            }
+            break;
+
         case 0x1:
             pc = nnn;
             std::cout << "Executing: JP 0x" << std::hex << nnn << std::dec << "\n";
+            std::cout << "  -> pc now = " << pc << "\n";
+            break;
+
+        case 0x2:
+            stack[sp] = pc;
+            sp++;
+            pc = nnn;
+            std::cout << "Executing: CALL 0x" << std::hex << nnn << std::dec << "\n";
             std::cout << "  -> pc now = " << pc << "\n";
             break;
 
