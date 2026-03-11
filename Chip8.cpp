@@ -124,4 +124,11 @@ void Chip8::step() {
     fetchInstruction();
     decodeInstruction();
     executeInstruction();
+
+    std::cout << "STATE pc=0x" << std::hex << pc
+              << " opcode=0x" << opcode
+              << " I=0x" << I
+              << " sp=" << std::dec << static_cast<unsigned>(sp)
+              << " V0=" << static_cast<unsigned>(V[0])
+              << "\n\n";
 }
