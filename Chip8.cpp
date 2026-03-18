@@ -67,7 +67,10 @@ void Chip8::executeInstruction() {
 
     switch (firstNibble) {
         case 0x0:
-            if (opcode == 0x00EE) {
+            if (opcode == 0x00E0) {
+                display.fill(0);
+                std::cout << "Executing: CLS\n";
+            } else if (opcode == 0x00EE) {
                 sp--;
                 pc = stack[sp];
                 std::cout << "Executing: RET\n";
