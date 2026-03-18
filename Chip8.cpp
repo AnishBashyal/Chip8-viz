@@ -9,6 +9,7 @@ Chip8::Chip8() {
     
     // Clear memory, registers, and stack
     memory.fill(0);
+    display.fill(0);
     V.fill(0);
     stack.fill(0);
     

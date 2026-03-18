@@ -8,6 +8,9 @@ public:
     // Memory
     std::array<uint8_t, 4096> memory{};
 
+    // Display (64x32 monochrome)
+    std::array<uint8_t, 64 * 32> display{};
+
     // Registers
     std::array<uint8_t, 16> V{};     // 16 General purpose registers (V0 - VF)
     uint16_t I{0};                   // Index register
