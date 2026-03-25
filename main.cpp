@@ -19,6 +19,25 @@ void createDummyROM() {
     file.close();
 }
 
+void renderDisplay(SDL_Renderer* renderer, const Chip8& emulator) {
+    const int scale = 10;
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    for (int y = 0; y < 32; ++y) {
+        for (int x = 0; x < 64; ++x) {
+            if (emulator.display[y * 64 + x] != 0) {
+                SDL_Rect pixel = {x * scale, y * scale, scale, scale};
+                SDL_RenderFillRect(renderer, &pixel);
+            }
+        }
+    }
+
+    SDL_RenderPresent(renderer);
+}
+
 int main() {
     std::cout << "Initializing system...\n";
 
@@ -51,9 +70,6 @@ int main() {
     }
 
     std::cout << "SDL window opened.\n";
-    SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
-    SDL_RenderClear(renderer);
-    SDL_RenderPresent(renderer);
 
     Chip8 emulator;
     createDummyROM();
@@ -80,6 +96,7 @@ int main() {
             }
         }
         if (start == 0) break;
+        renderDisplay(renderer, emulator);
         SDL_Delay(16);
     }
 
