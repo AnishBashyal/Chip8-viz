@@ -82,6 +82,11 @@ int main() {
         emulator.step();
         emulator.step();
         emulator.step();
+
+        // Simple visual test pattern (diagonal line)
+        for (int i = 0; i < 32; ++i) {
+            emulator.display[i * 64 + i] = 1;
+        }
     } else {
         std::cout << "Failed to load ROM.\n";
     }
