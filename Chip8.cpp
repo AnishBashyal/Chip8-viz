@@ -62,8 +62,10 @@ void Chip8::decodeInstruction() {
 void Chip8::executeInstruction() {
     uint8_t firstNibble = (opcode & 0xF000) >> 12;
     uint8_t x = (opcode & 0x0F00) >> 8;
+    uint8_t y = (opcode & 0x00F0) >> 4;
     uint8_t kk = opcode & 0x00FF;
     uint16_t nnn = opcode & 0x0FFF;
+    uint8_t n = opcode & 0x000F;
 
     switch (firstNibble) {
         case 0x0:
@@ -116,6 +118,35 @@ void Chip8::executeInstruction() {
             std::cout << "  -> V" << static_cast<unsigned>(x)
                       << " now = " << static_cast<unsigned>(V[x]) << "\n";
             break;
+
+        case 0xD: {
+            // DXYN: DRW Vx, Vy, nibble
+            uint8_t vx = V[x];
+            uint8_t vy = V[y];
+            V[0xF] = 0;
+
+            for (int row = 0; row < static_cast<int>(n); ++row) {
+                uint8_t spriteByte = memory[I + row];
+                for (int bit = 0; bit < 8; ++bit) {
+                    if ((spriteByte & (0x80 >> bit)) != 0) {
+                        int px = (static_cast<int>(vx) + bit) % 64;
+                        int py = (static_cast<int>(vy) + row) % 32;
+                        int idx = py * 64 + px;
+
+                        if (display[idx] == 1) {
+                            V[0xF] = 1;
+                        }
+                        display[idx] ^= 1;
+                    }
+                }
+            }
+
+            std::cout << "Executing: DRW V" << static_cast<unsigned>(x)
+                      << ", V" << static_cast<unsigned>(y)
+                      << ", " << static_cast<unsigned>(n) << "\n";
+            std::cout << "  -> VF=" << static_cast<unsigned>(V[0xF]) << "\n";
+            break;
+        }
 
         default:
             std::cout << "Execute: unimplemented opcode 0x"

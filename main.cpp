@@ -8,6 +8,10 @@ void createDummyROM() {
     std::ofstream file("dummy_rom.ch8", std::ios::binary);
     uint8_t bytes[] = {
         0x00, 0xE0, // CLS
+        0x60, 0x0A, // LD V0, 0x0A
+        0x61, 0x05, // LD V1, 0x05
+        0xA3, 0x00, // LD I, 0x300
+        0xD0, 0x15, // DRW V0, V1, 5
         0x12, 0x00  // JP 0x200 (loop)
     };
     file.write(reinterpret_cast<char*>(bytes), sizeof(bytes));
@@ -74,6 +78,12 @@ int main() {
         for (int i = 0; i < 32; ++i) {
             emulator.display[i * 64 + i] = 1;
         }
+
+        // Sprite data used by DRW (5 bytes at I=0x300)
+        uint8_t sprite[5] = {0xF0, 0x90, 0x90, 0x90, 0xF0};
+        for (int i = 0; i < 5; ++i) {
+            emulator.memory[0x300 + i] = sprite[i];
+        }
     } else {
         std::cout << "Failed to load ROM.\n";
     }
@@ -81,7 +91,7 @@ int main() {
     uint32_t start = SDL_GetTicks();
     uint32_t lastStep = start;
     SDL_Event event;
-    while (SDL_GetTicks() - start < 5000) {
+    while (SDL_GetTicks() - start < 8000) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 start = 0;
