@@ -7,13 +7,8 @@
 void createDummyROM() {
     std::ofstream file("dummy_rom.ch8", std::ios::binary);
     uint8_t bytes[] = {
-        0x60, 0x01, // LD V0, 0x01
-        0x22, 0x08, // CALL 0x208
-        0x70, 0x01, // ADD V0, 0x01
-        0x12, 0x00, // JP 0x200 (loop)
-
-        0x70, 0x05, // ADD V0, 0x05  (subroutine at 0x208)
-        0x00, 0xEE  // RET
+        0x00, 0xE0, // CLS
+        0x12, 0x00  // JP 0x200 (loop)
     };
     file.write(reinterpret_cast<char*>(bytes), sizeof(bytes));
     file.close();
@@ -76,14 +71,6 @@ int main() {
 
     if (emulator.loadROM("dummy_rom.ch8")) {
         std::cout << "ROM loaded successfully.\n\n";
-        emulator.step();
-        emulator.step();
-        emulator.step();
-        emulator.step();
-        emulator.step();
-        emulator.step();
-
-        // Simple visual test pattern (diagonal line)
         for (int i = 0; i < 32; ++i) {
             emulator.display[i * 64 + i] = 1;
         }
@@ -92,6 +79,7 @@ int main() {
     }
 
     uint32_t start = SDL_GetTicks();
+    uint32_t lastStep = start;
     SDL_Event event;
     while (SDL_GetTicks() - start < 5000) {
         while (SDL_PollEvent(&event)) {
@@ -101,6 +89,12 @@ int main() {
             }
         }
         if (start == 0) break;
+
+        if (SDL_GetTicks() - lastStep >= 1000) {
+            emulator.step();
+            lastStep = SDL_GetTicks();
+        }
+
         renderDisplay(renderer, emulator);
         SDL_Delay(16);
     }
