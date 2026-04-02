@@ -187,6 +187,37 @@ void Chip8::executeInstruction() {
             break;
         }
 
+        case 0xE: {
+            uint8_t key = V[x] & 0x0F;
+            if (kk == 0x9E) {
+                if (keys[key] != 0) {
+                    pc += 2;
+                }
+                if (trace) {
+                    std::cout << "Executing: SKP V" << static_cast<unsigned>(x) << "\n";
+                    std::cout << "  -> key " << static_cast<unsigned>(key)
+                              << " pressed=" << (keys[key] != 0 ? 1 : 0)
+                              << " pc=0x" << std::hex << pc << std::dec << "\n";
+                }
+            } else if (kk == 0xA1) {
+                if (keys[key] == 0) {
+                    pc += 2;
+                }
+                if (trace) {
+                    std::cout << "Executing: SKNP V" << static_cast<unsigned>(x) << "\n";
+                    std::cout << "  -> key " << static_cast<unsigned>(key)
+                              << " pressed=" << (keys[key] != 0 ? 1 : 0)
+                              << " pc=0x" << std::hex << pc << std::dec << "\n";
+                }
+            } else {
+                if (trace) {
+                    std::cout << "Execute: unimplemented opcode 0x"
+                              << std::hex << opcode << std::dec << "\n";
+                }
+            }
+            break;
+        }
+
         default:
             if (trace) {
                 std::cout << "Execute: unimplemented opcode 0x"
