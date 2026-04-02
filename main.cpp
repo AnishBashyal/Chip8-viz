@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iomanip>
 #include <fstream>
 #include <SDL.h>
 #include "Chip8.h"
@@ -79,7 +78,6 @@ int main() {
             emulator.display[i * 64 + i] = 1;
         }
 
-        // Sprite data used by DRW (5 bytes at I=0x300)
         uint8_t sprite[5] = {0xF0, 0x90, 0x90, 0x90, 0xF0};
         for (int i = 0; i < 5; ++i) {
             emulator.memory[0x300 + i] = sprite[i];

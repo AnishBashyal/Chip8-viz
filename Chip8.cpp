@@ -16,6 +16,18 @@ Chip8::Chip8() {
     I = 0;
     sp = 0;
     opcode = 0;
+
+    delayTimer = 0;
+    soundTimer = 0;
+}
+
+void Chip8::advanceTimers() {
+    if (delayTimer > 0) {
+        delayTimer--;
+    }
+    if (soundTimer > 0) {
+        soundTimer--;
+    }
 }
 
 bool Chip8::loadROM(const std::string& filename) {

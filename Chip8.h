@@ -22,7 +22,10 @@ public:
     
     uint16_t opcode{0};              // Current instruction
 
-    bool trace{false};                // if true, print decode/execute/STATE each step
+    bool trace{true};                // if true, print decode/execute/STATE each step
+
+    uint8_t delayTimer{0};
+    uint8_t soundTimer{0};
 
     Chip8();
     bool loadROM(const std::string& filename);
@@ -31,4 +34,6 @@ public:
 
     void executeInstruction();
     void step();
+
+    void advanceTimers();
 };
