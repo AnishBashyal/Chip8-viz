@@ -19,6 +19,15 @@ Chip8::Chip8() {
 
     delayTimer = 0;
     soundTimer = 0;
+
+    keys.fill(0);
+}
+
+void Chip8::setKey(uint8_t keyIndex, bool pressed) {
+    if (keyIndex >= 16) {
+        return;
+    }
+    keys[keyIndex] = pressed ? 1 : 0;
 }
 
 void Chip8::advanceTimers() {

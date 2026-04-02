@@ -27,6 +27,8 @@ public:
     uint8_t delayTimer{0};
     uint8_t soundTimer{0};
 
+    std::array<uint8_t, 16> keys{};
+
     Chip8();
     bool loadROM(const std::string& filename);
     void fetchInstruction();
@@ -36,4 +38,6 @@ public:
     void step();
 
     void advanceTimers();
+
+    void setKey(uint8_t keyIndex, bool pressed);
 };
