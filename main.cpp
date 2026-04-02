@@ -89,7 +89,23 @@ int main() {
     uint32_t start = SDL_GetTicks();
     uint32_t lastStep = start;
     SDL_Event event;
+    float timerAccumSec = 0.0f;
+    Uint32 lastTicks = SDL_GetTicks();
+
     while (SDL_GetTicks() - start < 8000) {
+        Uint32 now = SDL_GetTicks();
+        float dtSec = (now - lastTicks) / 1000.0f;
+        lastTicks = now;
+        if (dtSec > 0.25f) {
+            dtSec = 0.25f;
+        }
+        timerAccumSec += dtSec;
+        constexpr float kTimerTickSec = 1.0f / 60.0f;
+        while (timerAccumSec >= kTimerTickSec) {
+            timerAccumSec -= kTimerTickSec;
+            emulator.advanceTimers();
+        }
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 start = 0;
