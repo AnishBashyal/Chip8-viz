@@ -43,6 +43,8 @@ void Chip8::fetchInstruction() {
 }
 
 void Chip8::decodeInstruction() {
+    if (!trace) return;
+
     uint8_t firstNibble = (opcode & 0xF000) >> 12;
     uint8_t x = (opcode & 0x0F00) >> 8;
     uint8_t y = (opcode & 0x00F0) >> 4;
@@ -71,52 +73,66 @@ void Chip8::executeInstruction() {
         case 0x0:
             if (opcode == 0x00E0) {
                 display.fill(0);
-                std::cout << "Executing: CLS\n";
+                if (trace) std::cout << "Executing: CLS\n";
             } else if (opcode == 0x00EE) {
                 sp--;
                 pc = stack[sp];
-                std::cout << "Executing: RET\n";
-                std::cout << "  -> pc now = " << pc << "\n";
+                if (trace) {
+                    std::cout << "Executing: RET\n";
+                    std::cout << "  -> pc now = " << pc << "\n";
+                }
             } else {
-                std::cout << "Execute: unimplemented opcode 0x"
-                          << std::hex << opcode << std::dec << "\n";
+                if (trace) {
+                    std::cout << "Execute: unimplemented opcode 0x"
+                              << std::hex << opcode << std::dec << "\n";
+                }
             }
             break;
 
         case 0x1:
             pc = nnn;
-            std::cout << "Executing: JP 0x" << std::hex << nnn << std::dec << "\n";
-            std::cout << "  -> pc now = " << pc << "\n";
+            if (trace) {
+                std::cout << "Executing: JP 0x" << std::hex << nnn << std::dec << "\n";
+                std::cout << "  -> pc now = " << pc << "\n";
+            }
             break;
 
         case 0x2:
             stack[sp] = pc;
             sp++;
             pc = nnn;
-            std::cout << "Executing: CALL 0x" << std::hex << nnn << std::dec << "\n";
-            std::cout << "  -> pc now = " << pc << "\n";
+            if (trace) {
+                std::cout << "Executing: CALL 0x" << std::hex << nnn << std::dec << "\n";
+                std::cout << "  -> pc now = " << pc << "\n";
+            }
             break;
 
         case 0xA:
             I = nnn;
-            std::cout << "Executing: LD I, 0x" << std::hex << nnn << std::dec << "\n";
-            std::cout << "  -> I now = " << I << "\n";
+            if (trace) {
+                std::cout << "Executing: LD I, 0x" << std::hex << nnn << std::dec << "\n";
+                std::cout << "  -> I now = " << I << "\n";
+            }
             break;
 
         case 0x6:
             V[x] = kk;
-            std::cout << "Executing: LD V" << static_cast<unsigned>(x)
-                      << ", 0x" << std::hex << static_cast<unsigned>(kk) << std::dec << "\n";
-            std::cout << "  -> V" << static_cast<unsigned>(x)
-                      << " now = " << static_cast<unsigned>(V[x]) << "\n";
+            if (trace) {
+                std::cout << "Executing: LD V" << static_cast<unsigned>(x)
+                          << ", 0x" << std::hex << static_cast<unsigned>(kk) << std::dec << "\n";
+                std::cout << "  -> V" << static_cast<unsigned>(x)
+                          << " now = " << static_cast<unsigned>(V[x]) << "\n";
+            }
             break;
 
         case 0x7:
             V[x] = static_cast<uint8_t>(V[x] + kk);
-            std::cout << "Executing: ADD V" << static_cast<unsigned>(x)
-                      << ", 0x" << std::hex << static_cast<unsigned>(kk) << std::dec << "\n";
-            std::cout << "  -> V" << static_cast<unsigned>(x)
-                      << " now = " << static_cast<unsigned>(V[x]) << "\n";
+            if (trace) {
+                std::cout << "Executing: ADD V" << static_cast<unsigned>(x)
+                          << ", 0x" << std::hex << static_cast<unsigned>(kk) << std::dec << "\n";
+                std::cout << "  -> V" << static_cast<unsigned>(x)
+                          << " now = " << static_cast<unsigned>(V[x]) << "\n";
+            }
             break;
 
         case 0xD: {
@@ -141,16 +157,20 @@ void Chip8::executeInstruction() {
                 }
             }
 
-            std::cout << "Executing: DRW V" << static_cast<unsigned>(x)
-                      << ", V" << static_cast<unsigned>(y)
-                      << ", " << static_cast<unsigned>(n) << "\n";
-            std::cout << "  -> VF=" << static_cast<unsigned>(V[0xF]) << "\n";
+            if (trace) {
+                std::cout << "Executing: DRW V" << static_cast<unsigned>(x)
+                          << ", V" << static_cast<unsigned>(y)
+                          << ", " << static_cast<unsigned>(n) << "\n";
+                std::cout << "  -> VF=" << static_cast<unsigned>(V[0xF]) << "\n";
+            }
             break;
         }
 
         default:
-            std::cout << "Execute: unimplemented opcode 0x"
-                      << std::hex << opcode << std::dec << "\n";
+            if (trace) {
+                std::cout << "Execute: unimplemented opcode 0x"
+                          << std::hex << opcode << std::dec << "\n";
+            }
             break;
     }
 }
@@ -160,10 +180,12 @@ void Chip8::step() {
     decodeInstruction();
     executeInstruction();
 
-    std::cout << "STATE pc=0x" << std::hex << pc
-              << " opcode=0x" << opcode
-              << " I=0x" << I
-              << " sp=" << std::dec << static_cast<unsigned>(sp)
-              << " V0=" << static_cast<unsigned>(V[0])
-              << "\n\n";
+    if (trace) {
+        std::cout << "STATE pc=0x" << std::hex << pc
+                  << " opcode=0x" << opcode
+                  << " I=0x" << I
+                  << " sp=" << std::dec << static_cast<unsigned>(sp)
+                  << " V0=" << static_cast<unsigned>(V[0])
+                  << "\n\n";
+    }
 }

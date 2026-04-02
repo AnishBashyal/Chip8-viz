@@ -22,6 +22,8 @@ public:
     
     uint16_t opcode{0};              // Current instruction
 
+    bool trace{false};                // if true, print decode/execute/STATE each step
+
     Chip8();
     bool loadROM(const std::string& filename);
     void fetchInstruction();
