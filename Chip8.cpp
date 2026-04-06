@@ -21,6 +21,9 @@ Chip8::Chip8() {
     soundTimer = 0;
 
     keys.fill(0);
+
+    waitingKey = false;
+    waitingReg = 0;
 }
 
 void Chip8::setKey(uint8_t keyIndex, bool pressed) {
@@ -28,6 +31,11 @@ void Chip8::setKey(uint8_t keyIndex, bool pressed) {
         return;
     }
     keys[keyIndex] = pressed ? 1 : 0;
+    if (waitingKey && pressed) {
+        V[waitingReg] = keyIndex;
+        waitingKey = false;
+        pc += 2;
+    }
 }
 
 void Chip8::advanceTimers() {
@@ -218,6 +226,42 @@ void Chip8::executeInstruction() {
             break;
         }
 
+        case 0xF:
+            if (kk == 0x07) {
+                V[x] = delayTimer;
+                if (trace) {
+                    std::cout << "Executing: LD V" << static_cast<unsigned>(x) << ", DT\n";
+                    std::cout << "  -> V" << static_cast<unsigned>(x)
+                              << " now = " << static_cast<unsigned>(V[x]) << "\n";
+                }
+            } else if (kk == 0x0A) {
+                waitingKey = true;
+                waitingReg = x;
+                pc -= 2;
+                if (trace) {
+                    std::cout << "Executing: LD V" << static_cast<unsigned>(x) << ", K (waiting)\n";
+                    std::cout << "  -> pc=0x" << std::hex << pc << std::dec << "\n";
+                }
+            } else if (kk == 0x15) {
+                delayTimer = V[x];
+                if (trace) {
+                    std::cout << "Executing: LD DT, V" << static_cast<unsigned>(x) << "\n";
+                    std::cout << "  -> DT now = " << static_cast<unsigned>(delayTimer) << "\n";
+                }
+            } else if (kk == 0x18) {
+                soundTimer = V[x];
+                if (trace) {
+                    std::cout << "Executing: LD ST, V" << static_cast<unsigned>(x) << "\n";
+                    std::cout << "  -> ST now = " << static_cast<unsigned>(soundTimer) << "\n";
+                }
+            } else {
+                if (trace) {
+                    std::cout << "Execute: unimplemented opcode 0x"
+                              << std::hex << opcode << std::dec << "\n";
+                }
+            }
+            break;
+
         default:
             if (trace) {
                 std::cout << "Execute: unimplemented opcode 0x"
@@ -228,6 +272,10 @@ void Chip8::executeInstruction() {
 }
 
 void Chip8::step() {
+    if (waitingKey) {
+        return;
+    }
+
     fetchInstruction();
     decodeInstruction();
     executeInstruction();

@@ -29,6 +29,9 @@ public:
 
     std::array<uint8_t, 16> keys{};
 
+    bool waitingKey{false};
+    uint8_t waitingReg{0};
+
     Chip8();
     bool loadROM(const std::string& filename);
     void fetchInstruction();
