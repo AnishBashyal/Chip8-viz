@@ -12,7 +12,9 @@ void createDummyROM() {
         0x61, 0x05, // LD V1, 0x05
         0xA3, 0x00, // LD I, 0x300
         0xD0, 0x15, // DRW V0, V1, 5
-        0x12, 0x00  // JP 0x200 (loop)
+        0x62, 0x3C, // LD V2, 60
+        0xF2, 0x15, // LD DT, V2
+        0x12, 0x0E  // JP 0x20E (idle while DT decrements)
     };
     file.write(reinterpret_cast<char*>(bytes), sizeof(bytes));
     file.close();
