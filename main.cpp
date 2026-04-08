@@ -38,6 +38,34 @@ void renderDisplay(SDL_Renderer* renderer, const Chip8& emulator) {
         }
     }
 
+    // Tiny keypad overlay (top-right): bright when pressed, dim when released.
+    const int keyOrder[16] = {
+        0x1, 0x2, 0x3, 0xC,
+        0x4, 0x5, 0x6, 0xD,
+        0x7, 0x8, 0x9, 0xE,
+        0xA, 0x0, 0xB, 0xF
+    };
+    const int cell = 12;
+    const int gap = 4;
+    const int overlayX = 640 - (4 * cell + 3 * gap) - 12;
+    const int overlayY = 12;
+    for (int i = 0; i < 16; ++i) {
+        int row = i / 4;
+        int col = i % 4;
+        SDL_Rect keyRect = {
+            overlayX + col * (cell + gap),
+            overlayY + row * (cell + gap),
+            cell,
+            cell
+        };
+        if (emulator.keys[keyOrder[i]] != 0) {
+            SDL_SetRenderDrawColor(renderer, 40, 220, 90, 255);
+        } else {
+            SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+        }
+        SDL_RenderFillRect(renderer, &keyRect);
+    }
+
     SDL_RenderPresent(renderer);
 }
 
