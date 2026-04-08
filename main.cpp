@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <cstdint>
 #include <SDL.h>
 #include "Chip8.h"
 
@@ -64,7 +66,7 @@ int mapSDLKeyToChip8(SDL_Keycode key) {
 int main() {
     std::cout << "Initializing system...\n";
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         std::cout << "SDL_Init failed: " << SDL_GetError() << "\n";
         return 1;
     }
@@ -93,6 +95,33 @@ int main() {
     }
 
     std::cout << "SDL window opened.\n";
+
+    SDL_AudioSpec desired{};
+    desired.freq = 44100;
+    desired.format = AUDIO_S16SYS;
+    desired.channels = 1;
+    desired.samples = 1024;
+    desired.callback = nullptr;
+
+    SDL_AudioDeviceID audioDevice = SDL_OpenAudioDevice(nullptr, 0, &desired, nullptr, 0);
+    bool audioEnabled = audioDevice != 0;
+    if (!audioEnabled) {
+        std::cout << "SDL_OpenAudioDevice failed: " << SDL_GetError() << "\n";
+    } else {
+        SDL_PauseAudioDevice(audioDevice, 0);
+    }
+
+    std::vector<int16_t> beepSamples;
+    if (audioEnabled) {
+        constexpr int kBeepMs = 100;
+        constexpr int kSampleRate = 44100;
+        constexpr int kPeriod = kSampleRate / 440; // ~440 Hz square wave
+        int sampleCount = (kSampleRate * kBeepMs) / 1000;
+        beepSamples.resize(static_cast<size_t>(sampleCount));
+        for (int i = 0; i < sampleCount; ++i) {
+            beepSamples[static_cast<size_t>(i)] = (i % kPeriod) < (kPeriod / 2) ? 9000 : -9000;
+        }
+    }
 
     Chip8 emulator;
     emulator.trace = false;
@@ -168,6 +197,16 @@ int main() {
         } else if (!soundActive && soundWasActive) {
             std::cout << "[SOUND] ST reached 0\n";
         }
+        if (audioEnabled) {
+            if (soundActive) {
+                Uint32 queuedBytes = SDL_GetQueuedAudioSize(audioDevice);
+                if (queuedBytes < beepSamples.size() * sizeof(int16_t)) {
+                    SDL_QueueAudio(audioDevice, beepSamples.data(), beepSamples.size() * sizeof(int16_t));
+                }
+            } else {
+                SDL_ClearQueuedAudio(audioDevice);
+            }
+        }
         soundWasActive = soundActive;
 
         std::string title = "Chip8 Viz | DT=" + std::to_string(emulator.delayTimer) +
@@ -179,6 +218,9 @@ int main() {
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    if (audioEnabled) {
+        SDL_CloseAudioDevice(audioDevice);
+    }
     SDL_Quit();
 
     return 0;
