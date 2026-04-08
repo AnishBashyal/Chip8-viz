@@ -91,7 +91,7 @@ int mapSDLKeyToChip8(SDL_Keycode key) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     std::cout << "Initializing system...\n";
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
@@ -153,17 +153,24 @@ int main() {
 
     Chip8 emulator;
     emulator.trace = false;
-    createDummyROM();
+    bool usingDummyROM = false;
+    std::string romPath;
+    if (argc >= 2) {
+        romPath = argv[1];
+    } else {
+        usingDummyROM = true;
+        createDummyROM();
+        romPath = "dummy_rom.ch8";
+    }
 
-    if (emulator.loadROM("dummy_rom.ch8")) {
+    if (emulator.loadROM(romPath)) {
         std::cout << "ROM loaded successfully.\n\n";
-        for (int i = 0; i < 32; ++i) {
-            emulator.display[i * 64 + i] = 1;
-        }
 
-        uint8_t sprite[5] = {0xF0, 0x90, 0x90, 0x90, 0xF0};
-        for (int i = 0; i < 5; ++i) {
-            emulator.memory[0x300 + i] = sprite[i];
+        if (usingDummyROM) {
+            uint8_t sprite[5] = {0xF0, 0x90, 0x90, 0x90, 0xF0};
+            for (int i = 0; i < 5; ++i) {
+                emulator.memory[0x300 + i] = sprite[i];
+            }
         }
     } else {
         std::cout << "Failed to load ROM.\n";
