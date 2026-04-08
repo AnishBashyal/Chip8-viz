@@ -117,6 +117,7 @@ int main() {
     Uint32 lastTicks = SDL_GetTicks();
     float timerAccumSec = 0.0f;
     float cpuAccumSec = 0.0f;
+    bool soundWasActive = false;
     constexpr float kTimerTickSec = 1.0f / 60.0f;
     constexpr float kCpuTickSec = 1.0f / 700.0f;
 
@@ -160,6 +161,14 @@ int main() {
             }
         }
         if (!running) break;
+
+        bool soundActive = emulator.soundTimer > 0;
+        if (soundActive && !soundWasActive) {
+            std::cout << "[SOUND] ST became active (beep pending)\n";
+        } else if (!soundActive && soundWasActive) {
+            std::cout << "[SOUND] ST reached 0\n";
+        }
+        soundWasActive = soundActive;
 
         std::string title = "Chip8 Viz | DT=" + std::to_string(emulator.delayTimer) +
                             " ST=" + std::to_string(emulator.soundTimer);
