@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <iostream>
+#include <cstdlib>
 
 Chip8::Chip8() {
     // The program counter starts at 0x200
@@ -136,11 +137,151 @@ void Chip8::executeInstruction() {
             }
             break;
 
+        case 0x3:
+            if (V[x] == kk) {
+                pc += 2;
+            }
+            if (trace) {
+                std::cout << "Executing: SE V" << static_cast<unsigned>(x)
+                          << ", 0x" << std::hex << static_cast<unsigned>(kk) << std::dec << "\n";
+                std::cout << "  -> pc now = " << pc << "\n";
+            }
+            break;
+
+        case 0x4:
+            if (V[x] != kk) {
+                pc += 2;
+            }
+            if (trace) {
+                std::cout << "Executing: SNE V" << static_cast<unsigned>(x)
+                          << ", 0x" << std::hex << static_cast<unsigned>(kk) << std::dec << "\n";
+                std::cout << "  -> pc now = " << pc << "\n";
+            }
+            break;
+
+        case 0x5:
+            if (n == 0x0) {
+                if (V[x] == V[y]) {
+                    pc += 2;
+                }
+                if (trace) {
+                    std::cout << "Executing: SE V" << static_cast<unsigned>(x)
+                              << ", V" << static_cast<unsigned>(y) << "\n";
+                    std::cout << "  -> pc now = " << pc << "\n";
+                }
+            } else if (trace) {
+                std::cout << "Execute: unimplemented opcode 0x"
+                          << std::hex << opcode << std::dec << "\n";
+            }
+            break;
+
         case 0xA:
             I = nnn;
             if (trace) {
                 std::cout << "Executing: LD I, 0x" << std::hex << nnn << std::dec << "\n";
                 std::cout << "  -> I now = " << I << "\n";
+            }
+            break;
+
+        case 0x8:
+            switch (n) {
+                case 0x0:
+                    V[x] = V[y];
+                    if (trace) std::cout << "Executing: LD V" << static_cast<unsigned>(x)
+                                         << ", V" << static_cast<unsigned>(y) << "\n";
+                    break;
+                case 0x1:
+                    V[x] |= V[y];
+                    if (trace) std::cout << "Executing: OR V" << static_cast<unsigned>(x)
+                                         << ", V" << static_cast<unsigned>(y) << "\n";
+                    break;
+                case 0x2:
+                    V[x] &= V[y];
+                    if (trace) std::cout << "Executing: AND V" << static_cast<unsigned>(x)
+                                         << ", V" << static_cast<unsigned>(y) << "\n";
+                    break;
+                case 0x3:
+                    V[x] ^= V[y];
+                    if (trace) std::cout << "Executing: XOR V" << static_cast<unsigned>(x)
+                                         << ", V" << static_cast<unsigned>(y) << "\n";
+                    break;
+                case 0x4: {
+                    uint16_t sum = static_cast<uint16_t>(V[x]) + static_cast<uint16_t>(V[y]);
+                    V[0xF] = (sum > 0xFF) ? 1 : 0;
+                    V[x] = static_cast<uint8_t>(sum & 0xFF);
+                    if (trace) std::cout << "Executing: ADD V" << static_cast<unsigned>(x)
+                                         << ", V" << static_cast<unsigned>(y) << " (VF carry)\n";
+                    break;
+                }
+                case 0x5:
+                    V[0xF] = (V[x] >= V[y]) ? 1 : 0;
+                    V[x] = static_cast<uint8_t>(V[x] - V[y]);
+                    if (trace) std::cout << "Executing: SUB V" << static_cast<unsigned>(x)
+                                         << ", V" << static_cast<unsigned>(y) << " (VF no-borrow)\n";
+                    break;
+                case 0x6:
+                    V[0xF] = V[x] & 0x1;
+                    V[x] = static_cast<uint8_t>(V[x] >> 1);
+                    if (trace) std::cout << "Executing: SHR V" << static_cast<unsigned>(x)
+                                         << " (VF=LSB)\n";
+                    break;
+                case 0x7:
+                    V[0xF] = (V[y] >= V[x]) ? 1 : 0;
+                    V[x] = static_cast<uint8_t>(V[y] - V[x]);
+                    if (trace) std::cout << "Executing: SUBN V" << static_cast<unsigned>(x)
+                                         << ", V" << static_cast<unsigned>(y) << " (VF no-borrow)\n";
+                    break;
+                case 0xE:
+                    V[0xF] = (V[x] >> 7) & 0x1;
+                    V[x] = static_cast<uint8_t>(V[x] << 1);
+                    if (trace) std::cout << "Executing: SHL V" << static_cast<unsigned>(x)
+                                         << " (VF=MSB)\n";
+                    break;
+                default:
+                    if (trace) {
+                        std::cout << "Execute: unimplemented opcode 0x"
+                                  << std::hex << opcode << std::dec << "\n";
+                    }
+                    break;
+            }
+            if (trace) {
+                std::cout << "  -> V" << static_cast<unsigned>(x)
+                          << "=" << static_cast<unsigned>(V[x])
+                          << " VF=" << static_cast<unsigned>(V[0xF]) << "\n";
+            }
+            break;
+
+        case 0x9:
+            if (n == 0x0) {
+                if (V[x] != V[y]) {
+                    pc += 2;
+                }
+                if (trace) {
+                    std::cout << "Executing: SNE V" << static_cast<unsigned>(x)
+                              << ", V" << static_cast<unsigned>(y) << "\n";
+                    std::cout << "  -> pc now = " << pc << "\n";
+                }
+            } else if (trace) {
+                std::cout << "Execute: unimplemented opcode 0x"
+                          << std::hex << opcode << std::dec << "\n";
+            }
+            break;
+
+        case 0xB:
+            pc = static_cast<uint16_t>(nnn + V[0]);
+            if (trace) {
+                std::cout << "Executing: JP V0, 0x" << std::hex << nnn << std::dec << "\n";
+                std::cout << "  -> pc now = " << pc << "\n";
+            }
+            break;
+
+        case 0xC:
+            V[x] = static_cast<uint8_t>((std::rand() & 0xFF) & kk);
+            if (trace) {
+                std::cout << "Executing: RND V" << static_cast<unsigned>(x)
+                          << ", 0x" << std::hex << static_cast<unsigned>(kk) << std::dec << "\n";
+                std::cout << "  -> V" << static_cast<unsigned>(x)
+                          << " now = " << static_cast<unsigned>(V[x]) << "\n";
             }
             break;
 
