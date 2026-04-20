@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include <cstdlib>
+#include <cstdio>
 #include <SDL.h>
 #include "Chip8.h"
 
@@ -311,6 +312,17 @@ int main(int argc, char* argv[]) {
         if (emulator.quirkShiftVY) {
             title += " [SHVY]";
         }
+        char hud[96];
+        std::snprintf(
+            hud,
+            sizeof(hud),
+            " | PC=0x%04X I=0x%04X SP=%u OPC=0x%04X",
+            emulator.pc,
+            emulator.I,
+            static_cast<unsigned>(emulator.sp),
+            emulator.opcode
+        );
+        title += hud;
         title += " | DT=" + std::to_string(emulator.delayTimer) +
                  " ST=" + std::to_string(emulator.soundTimer);
         SDL_SetWindowTitle(window, title.c_str());
