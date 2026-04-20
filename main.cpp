@@ -250,6 +250,10 @@ int main(int argc, char* argv[]) {
                     emulator.step();
                     std::cout << "[EMU] Single step\n";
                 }
+                if (event.key.keysym.sym == SDLK_t && event.key.repeat == 0) {
+                    emulator.trace = !emulator.trace;
+                    std::cout << (emulator.trace ? "[TRACE] on\n" : "[TRACE] off\n");
+                }
                 int chip8Key = mapSDLKeyToChip8(event.key.keysym.sym);
                 if (chip8Key >= 0) {
                     emulator.setKey(static_cast<uint8_t>(chip8Key), true);
@@ -287,6 +291,9 @@ int main(int argc, char* argv[]) {
         }
         if (emulator.waitingKey) {
             title += " [WAIT KEY]";
+        }
+        if (emulator.trace) {
+            title += " [TRACE]";
         }
         title += " | DT=" + std::to_string(emulator.delayTimer) +
                  " ST=" + std::to_string(emulator.soundTimer);
