@@ -254,6 +254,16 @@ int main(int argc, char* argv[]) {
                     emulator.trace = !emulator.trace;
                     std::cout << (emulator.trace ? "[TRACE] on\n" : "[TRACE] off\n");
                 }
+                if (event.key.keysym.sym == SDLK_LEFTBRACKET && event.key.repeat == 0) {
+                    emulator.quirkMemoryIncrementI = !emulator.quirkMemoryIncrementI;
+                    std::cout << "[QUIRK] FX55/65 I += Vx+1 "
+                              << (emulator.quirkMemoryIncrementI ? "on\n" : "off\n");
+                }
+                if (event.key.keysym.sym == SDLK_RIGHTBRACKET && event.key.repeat == 0) {
+                    emulator.quirkShiftVY = !emulator.quirkShiftVY;
+                    std::cout << "[QUIRK] SHR/SHL use Vy "
+                              << (emulator.quirkShiftVY ? "on\n" : "off\n");
+                }
                 int chip8Key = mapSDLKeyToChip8(event.key.keysym.sym);
                 if (chip8Key >= 0) {
                     emulator.setKey(static_cast<uint8_t>(chip8Key), true);
@@ -294,6 +304,12 @@ int main(int argc, char* argv[]) {
         }
         if (emulator.trace) {
             title += " [TRACE]";
+        }
+        if (emulator.quirkMemoryIncrementI) {
+            title += " [MEM+]";
+        }
+        if (emulator.quirkShiftVY) {
+            title += " [SHVY]";
         }
         title += " | DT=" + std::to_string(emulator.delayTimer) +
                  " ST=" + std::to_string(emulator.soundTimer);

@@ -32,6 +32,10 @@ public:
     bool waitingKey{false};
     uint8_t waitingReg{0};
 
+    // Interpreter compatibility (default off = common “modern” behavior).
+    bool quirkShiftVY{false};           // ON: SHR/SHL use Vy; OFF: shift Vx in place
+    bool quirkMemoryIncrementI{false}; // ON: FX55/65 set I += Vx + 1 after
+
     Chip8();
     bool loadROM(const std::string& filename);
     void fetchInstruction();

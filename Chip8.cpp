@@ -245,24 +245,34 @@ void Chip8::executeInstruction() {
                     if (trace) std::cout << "Executing: SUB V" << static_cast<unsigned>(x)
                                          << ", V" << static_cast<unsigned>(y) << " (VF no-borrow)\n";
                     break;
-                case 0x6:
-                    V[0xF] = V[x] & 0x1;
-                    V[x] = static_cast<uint8_t>(V[x] >> 1);
-                    if (trace) std::cout << "Executing: SHR V" << static_cast<unsigned>(x)
-                                         << " (VF=LSB)\n";
+                case 0x6: {
+                    uint8_t src = quirkShiftVY ? V[y] : V[x];
+                    V[0xF] = src & 0x1;
+                    V[x] = static_cast<uint8_t>(src >> 1);
+                    if (trace) {
+                        std::cout << "Executing: SHR V" << static_cast<unsigned>(x)
+                                  << (quirkShiftVY ? " from Vy" : "")
+                                  << " (VF=LSB)\n";
+                    }
                     break;
+                }
                 case 0x7:
                     V[0xF] = (V[y] >= V[x]) ? 1 : 0;
                     V[x] = static_cast<uint8_t>(V[y] - V[x]);
                     if (trace) std::cout << "Executing: SUBN V" << static_cast<unsigned>(x)
                                          << ", V" << static_cast<unsigned>(y) << " (VF no-borrow)\n";
                     break;
-                case 0xE:
-                    V[0xF] = (V[x] >> 7) & 0x1;
-                    V[x] = static_cast<uint8_t>(V[x] << 1);
-                    if (trace) std::cout << "Executing: SHL V" << static_cast<unsigned>(x)
-                                         << " (VF=MSB)\n";
+                case 0xE: {
+                    uint8_t src = quirkShiftVY ? V[y] : V[x];
+                    V[0xF] = (src >> 7) & 0x1;
+                    V[x] = static_cast<uint8_t>(src << 1);
+                    if (trace) {
+                        std::cout << "Executing: SHL V" << static_cast<unsigned>(x)
+                                  << (quirkShiftVY ? " from Vy" : "")
+                                  << " (VF=MSB)\n";
+                    }
                     break;
+                }
                 default:
                     if (trace) {
                         std::cout << "Execute: unimplemented opcode 0x"
@@ -451,15 +461,27 @@ void Chip8::executeInstruction() {
                 for (uint8_t reg = 0; reg <= x; ++reg) {
                     memory[I + reg] = V[reg];
                 }
+                if (quirkMemoryIncrementI) {
+                    I = static_cast<uint16_t>(I + x + 1);
+                }
                 if (trace) {
                     std::cout << "Executing: LD [I], V0..V" << static_cast<unsigned>(x) << "\n";
+                    if (quirkMemoryIncrementI) {
+                        std::cout << "  -> I now = 0x" << std::hex << I << std::dec << "\n";
+                    }
                 }
             } else if (kk == 0x65) {
                 for (uint8_t reg = 0; reg <= x; ++reg) {
                     V[reg] = memory[I + reg];
                 }
+                if (quirkMemoryIncrementI) {
+                    I = static_cast<uint16_t>(I + x + 1);
+                }
                 if (trace) {
                     std::cout << "Executing: LD V0..V" << static_cast<unsigned>(x) << ", [I]\n";
+                    if (quirkMemoryIncrementI) {
+                        std::cout << "  -> I now = 0x" << std::hex << I << std::dec << "\n";
+                    }
                 }
             } else {
                 if (trace) {
