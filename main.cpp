@@ -233,6 +233,10 @@ int main(int argc, char* argv[]) {
                     cpuAccumSec = 0.0f;
                     std::cout << (paused ? "[EMU] Paused\n" : "[EMU] Resumed\n");
                 }
+                if (event.key.keysym.sym == SDLK_n && event.key.repeat == 0 && paused) {
+                    emulator.step();
+                    std::cout << "[EMU] Single step\n";
+                }
                 int chip8Key = mapSDLKeyToChip8(event.key.keysym.sym);
                 if (chip8Key >= 0) {
                     emulator.setKey(static_cast<uint8_t>(chip8Key), true);
