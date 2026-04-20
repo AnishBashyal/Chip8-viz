@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <cstdlib>
 #include <SDL.h>
 #include "Chip8.h"
 
@@ -92,12 +93,24 @@ int mapSDLKeyToChip8(SDL_Keycode key) {
 }
 
 int main(int argc, char* argv[]) {
+    if (argc >= 2) {
+        std::string arg = argv[1];
+        if (arg == "-h" || arg == "--help") {
+            std::cout << "chip8 — Chip-8 emulator\n"
+                      << "  chip8              run built-in demo ROM\n"
+                      << "  chip8 <file.ch8>   load ROM from file\n";
+            return 0;
+        }
+    }
+
     std::cout << "Initializing system...\n";
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         std::cout << "SDL_Init failed: " << SDL_GetError() << "\n";
         return 1;
     }
+
+    std::srand(static_cast<unsigned>(SDL_GetTicks()));
 
     SDL_Window* window = SDL_CreateWindow(
         "Chip8 Viz",
