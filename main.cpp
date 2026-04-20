@@ -272,6 +272,9 @@ int main(int argc, char* argv[]) {
         if (paused) {
             title += " [PAUSED]";
         }
+        if (emulator.waitingKey) {
+            title += " [WAIT KEY]";
+        }
         title += " | DT=" + std::to_string(emulator.delayTimer) +
                  " ST=" + std::to_string(emulator.soundTimer);
         SDL_SetWindowTitle(window, title.c_str());
