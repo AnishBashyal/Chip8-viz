@@ -279,10 +279,12 @@ int main(int argc, char* argv[]) {
         if (!running) break;
 
         bool soundActive = emulator.soundTimer > 0;
-        if (soundActive && !soundWasActive) {
-            std::cout << "[SOUND] ST became active (beep pending)\n";
-        } else if (!soundActive && soundWasActive) {
-            std::cout << "[SOUND] ST reached 0\n";
+        if (emulator.trace) {
+            if (soundActive && !soundWasActive) {
+                std::cout << "[SOUND] ST became active (beep pending)\n";
+            } else if (!soundActive && soundWasActive) {
+                std::cout << "[SOUND] ST reached 0\n";
+            }
         }
         if (audioEnabled) {
             if (soundActive) {
