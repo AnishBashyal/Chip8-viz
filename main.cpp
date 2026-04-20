@@ -4,9 +4,9 @@
 #include <vector>
 #include <cstdint>
 #include <cstdlib>
-#include <cstdio>
 #include <SDL.h>
 #include "Chip8.h"
+#include "DashboardFont.h"
 
 void createDummyROM() {
     std::ofstream file("dummy_rom.ch8", std::ios::binary);
@@ -24,9 +24,73 @@ void createDummyROM() {
     file.close();
 }
 
-void renderDisplay(SDL_Renderer* renderer, const Chip8& emulator) {
-    const int scale = 10;
+constexpr int kPlayPxW = 640;
+constexpr int kPlayPxH = 320;
+constexpr int kPanelPxW = 220;
+constexpr int kWinPxW = kPlayPxW + kPanelPxW;
+constexpr int kPixelScale = 10;
 
+static void renderDashboard(SDL_Renderer* renderer, const Chip8& emulator, int panelX) {
+    SDL_Rect panel = {panelX, 0, kPanelPxW, kPlayPxH};
+    SDL_SetRenderDrawColor(renderer, 22, 24, 32, 255);
+    SDL_RenderFillRect(renderer, &panel);
+    SDL_SetRenderDrawColor(renderer, 55, 62, 82, 255);
+    SDL_RenderDrawRect(renderer, &panel);
+
+    const int z = 2;
+    const int tx = panelX + 8;
+    int ty = 10;
+
+    auto hline = [&](int y) {
+        SDL_SetRenderDrawColor(renderer, 48, 54, 72, 255);
+        SDL_RenderDrawLine(renderer, panelX + 6, y, panelX + kPanelPxW - 6, y);
+    };
+
+    SDL_SetRenderDrawColor(renderer, 140, 150, 175, 255);
+    hline(ty);
+    ty += 6;
+    SDL_SetRenderDrawColor(renderer, 220, 228, 245, 255);
+    // Rows: PC, I, SP, last opcode, DT ST, then V0–V7 | V8–VF (see chip8 --help)
+    drawHexWord(renderer, tx, ty, z, emulator.pc);
+    ty += 20;
+    drawHexWord(renderer, tx, ty, z, emulator.I);
+    ty += 20;
+    drawHexByte(renderer, tx, ty, z, emulator.sp);
+    ty += 20;
+    drawHexWord(renderer, tx, ty, z, emulator.opcode);
+    ty += 20;
+    drawHexByte(renderer, tx, ty, z, emulator.delayTimer);
+    drawHexByte(renderer, tx + 16 * z, ty, z, emulator.soundTimer);
+    ty += 24;
+    hline(ty);
+    ty += 8;
+
+    for (int row = 0; row < 8; ++row) {
+        int y = ty + row * 16;
+        drawHexByte(renderer, tx, y, z, emulator.V[static_cast<size_t>(row)]);
+        drawHexByte(renderer, tx + 88, y, z, emulator.V[static_cast<size_t>(row + 8)]);
+    }
+
+    // Quirk indicators (bottom): mem I+=, shift Vy
+    ty = kPlayPxH - 20;
+    SDL_SetRenderDrawColor(renderer, 90, 95, 110, 255);
+    SDL_Rect legM = {tx, ty, 8, 8};
+    SDL_Rect legS = {tx + 20, ty, 8, 8};
+    SDL_RenderDrawRect(renderer, &legM);
+    SDL_RenderDrawRect(renderer, &legS);
+    if (emulator.quirkMemoryIncrementI) {
+        SDL_SetRenderDrawColor(renderer, 80, 200, 120, 255);
+        SDL_Rect fill = {tx + 1, ty + 1, 6, 6};
+        SDL_RenderFillRect(renderer, &fill);
+    }
+    if (emulator.quirkShiftVY) {
+        SDL_SetRenderDrawColor(renderer, 230, 190, 80, 255);
+        SDL_Rect fill = {tx + 21, ty + 1, 6, 6};
+        SDL_RenderFillRect(renderer, &fill);
+    }
+}
+
+void renderFrame(SDL_Renderer* renderer, const Chip8& emulator) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -34,13 +98,13 @@ void renderDisplay(SDL_Renderer* renderer, const Chip8& emulator) {
     for (int y = 0; y < 32; ++y) {
         for (int x = 0; x < 64; ++x) {
             if (emulator.display[y * 64 + x] != 0) {
-                SDL_Rect pixel = {x * scale, y * scale, scale, scale};
+                SDL_Rect pixel = {x * kPixelScale, y * kPixelScale, kPixelScale, kPixelScale};
                 SDL_RenderFillRect(renderer, &pixel);
             }
         }
     }
 
-    // Tiny keypad overlay (top-right): bright when pressed, dim when released.
+    // Keypad overlay (bottom-right of playfield)
     const int keyOrder[16] = {
         0x1, 0x2, 0x3, 0xC,
         0x4, 0x5, 0x6, 0xD,
@@ -49,8 +113,10 @@ void renderDisplay(SDL_Renderer* renderer, const Chip8& emulator) {
     };
     const int cell = 12;
     const int gap = 4;
-    const int overlayX = 640 - (4 * cell + 3 * gap) - 12;
-    const int overlayY = 12;
+    const int gridW = 4 * cell + 3 * gap;
+    const int gridH = 4 * cell + 3 * gap;
+    const int overlayX = kPlayPxW - gridW - 10;
+    const int overlayY = kPlayPxH - gridH - 8;
     for (int i = 0; i < 16; ++i) {
         int row = i / 4;
         int col = i % 4;
@@ -63,11 +129,12 @@ void renderDisplay(SDL_Renderer* renderer, const Chip8& emulator) {
         if (emulator.keys[keyOrder[i]] != 0) {
             SDL_SetRenderDrawColor(renderer, 40, 220, 90, 255);
         } else {
-            SDL_SetRenderDrawColor(renderer, 60, 60, 60, 255);
+            SDL_SetRenderDrawColor(renderer, 48, 52, 58, 255);
         }
         SDL_RenderFillRect(renderer, &keyRect);
     }
 
+    renderDashboard(renderer, emulator, kPlayPxW);
     SDL_RenderPresent(renderer);
 }
 
@@ -99,7 +166,9 @@ int main(int argc, char* argv[]) {
         if (arg == "-h" || arg == "--help") {
             std::cout << "chip8 — Chip-8 emulator\n"
                       << "  chip8              run built-in demo ROM\n"
-                      << "  chip8 <file.ch8>   load ROM from file\n";
+                      << "  chip8 <file.ch8>   load ROM from file\n"
+                      << "\nRight panel (top→bottom): PC, I, SP, opcode, DT ST, registers V0–VF; "
+                      << "squares = [ mem I+= ] [ shift Vy ].\n";
             return 0;
         }
     }
@@ -117,8 +186,8 @@ int main(int argc, char* argv[]) {
         "Chip8 Viz",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        640,
-        320,
+        kWinPxW,
+        kPlayPxH,
         SDL_WINDOW_SHOWN
     );
 
@@ -300,35 +369,16 @@ int main(int argc, char* argv[]) {
 
         std::string title = "Chip8 Viz";
         if (paused) {
-            title += " [PAUSED]";
+            title += " — paused";
         }
         if (emulator.waitingKey) {
-            title += " [WAIT KEY]";
+            title += " — wait key";
         }
         if (emulator.trace) {
-            title += " [TRACE]";
+            title += " — trace";
         }
-        if (emulator.quirkMemoryIncrementI) {
-            title += " [MEM+]";
-        }
-        if (emulator.quirkShiftVY) {
-            title += " [SHVY]";
-        }
-        char hud[96];
-        std::snprintf(
-            hud,
-            sizeof(hud),
-            " | PC=0x%04X I=0x%04X SP=%u OPC=0x%04X",
-            emulator.pc,
-            emulator.I,
-            static_cast<unsigned>(emulator.sp),
-            emulator.opcode
-        );
-        title += hud;
-        title += " | DT=" + std::to_string(emulator.delayTimer) +
-                 " ST=" + std::to_string(emulator.soundTimer);
         SDL_SetWindowTitle(window, title.c_str());
-        renderDisplay(renderer, emulator);
+        renderFrame(renderer, emulator);
         SDL_Delay(16);
     }
 
