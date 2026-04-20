@@ -228,6 +228,9 @@ int main(int argc, char* argv[]) {
                 }
                 if (event.key.keysym.sym == SDLK_p && event.key.repeat == 0) {
                     paused = !paused;
+                    lastTicks = SDL_GetTicks();
+                    timerAccumSec = 0.0f;
+                    cpuAccumSec = 0.0f;
                     std::cout << (paused ? "[EMU] Paused\n" : "[EMU] Resumed\n");
                 }
                 int chip8Key = mapSDLKeyToChip8(event.key.keysym.sym);
