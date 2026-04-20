@@ -4,6 +4,28 @@
 #include <iostream>
 #include <cstdlib>
 
+namespace {
+constexpr uint16_t kFontBase = 0x50;
+constexpr uint8_t kFontset[80] = {
+    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+    0x20, 0x60, 0x20, 0x20, 0x70, // 1
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+    0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+};
+}
+
 Chip8::Chip8() {
     // The program counter starts at 0x200
     pc = 0x200;
@@ -25,6 +47,10 @@ Chip8::Chip8() {
 
     waitingKey = false;
     waitingReg = 0;
+
+    for (size_t i = 0; i < sizeof(kFontset); ++i) {
+        memory[kFontBase + i] = kFontset[i];
+    }
 }
 
 void Chip8::setKey(uint8_t keyIndex, bool pressed) {
@@ -394,6 +420,46 @@ void Chip8::executeInstruction() {
                 if (trace) {
                     std::cout << "Executing: LD ST, V" << static_cast<unsigned>(x) << "\n";
                     std::cout << "  -> ST now = " << static_cast<unsigned>(soundTimer) << "\n";
+                }
+            } else if (kk == 0x1E) {
+                I = static_cast<uint16_t>(I + V[x]);
+                if (trace) {
+                    std::cout << "Executing: ADD I, V" << static_cast<unsigned>(x) << "\n";
+                    std::cout << "  -> I now = 0x" << std::hex << I << std::dec << "\n";
+                }
+            } else if (kk == 0x29) {
+                uint8_t digit = V[x] & 0x0F;
+                I = static_cast<uint16_t>(kFontBase + digit * 5);
+                if (trace) {
+                    std::cout << "Executing: LD F, V" << static_cast<unsigned>(x) << "\n";
+                    std::cout << "  -> I now = 0x" << std::hex << I
+                              << " (font for " << std::dec << static_cast<unsigned>(digit) << ")\n";
+                }
+            } else if (kk == 0x33) {
+                uint8_t value = V[x];
+                memory[I] = static_cast<uint8_t>(value / 100);
+                memory[I + 1] = static_cast<uint8_t>((value / 10) % 10);
+                memory[I + 2] = static_cast<uint8_t>(value % 10);
+                if (trace) {
+                    std::cout << "Executing: LD B, V" << static_cast<unsigned>(x) << "\n";
+                    std::cout << "  -> [I..I+2] = "
+                              << static_cast<unsigned>(memory[I]) << ", "
+                              << static_cast<unsigned>(memory[I + 1]) << ", "
+                              << static_cast<unsigned>(memory[I + 2]) << "\n";
+                }
+            } else if (kk == 0x55) {
+                for (uint8_t reg = 0; reg <= x; ++reg) {
+                    memory[I + reg] = V[reg];
+                }
+                if (trace) {
+                    std::cout << "Executing: LD [I], V0..V" << static_cast<unsigned>(x) << "\n";
+                }
+            } else if (kk == 0x65) {
+                for (uint8_t reg = 0; reg <= x; ++reg) {
+                    V[reg] = memory[I + reg];
+                }
+                if (trace) {
+                    std::cout << "Executing: LD V0..V" << static_cast<unsigned>(x) << ", [I]\n";
                 }
             } else {
                 if (trace) {
