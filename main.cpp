@@ -187,6 +187,7 @@ int main(int argc, char* argv[]) {
     }
 
     bool running = true;
+    bool paused = false;
     SDL_Event event;
     Uint32 lastTicks = SDL_GetTicks();
     float timerAccumSec = 0.0f;
@@ -204,13 +205,15 @@ int main(int argc, char* argv[]) {
         }
         timerAccumSec += dtSec;
         cpuAccumSec += dtSec;
-        while (timerAccumSec >= kTimerTickSec) {
-            timerAccumSec -= kTimerTickSec;
-            emulator.advanceTimers();
-        }
-        while (cpuAccumSec >= kCpuTickSec) {
-            cpuAccumSec -= kCpuTickSec;
-            emulator.step();
+        if (!paused) {
+            while (timerAccumSec >= kTimerTickSec) {
+                timerAccumSec -= kTimerTickSec;
+                emulator.advanceTimers();
+            }
+            while (cpuAccumSec >= kCpuTickSec) {
+                cpuAccumSec -= kCpuTickSec;
+                emulator.step();
+            }
         }
 
         while (SDL_PollEvent(&event)) {
@@ -222,6 +225,10 @@ int main(int argc, char* argv[]) {
                 if (event.key.keysym.sym == SDLK_ESCAPE) {
                     running = false;
                     break;
+                }
+                if (event.key.keysym.sym == SDLK_p && event.key.repeat == 0) {
+                    paused = !paused;
+                    std::cout << (paused ? "[EMU] Paused\n" : "[EMU] Resumed\n");
                 }
                 int chip8Key = mapSDLKeyToChip8(event.key.keysym.sym);
                 if (chip8Key >= 0) {
@@ -254,8 +261,12 @@ int main(int argc, char* argv[]) {
         }
         soundWasActive = soundActive;
 
-        std::string title = "Chip8 Viz | DT=" + std::to_string(emulator.delayTimer) +
-                            " ST=" + std::to_string(emulator.soundTimer);
+        std::string title = "Chip8 Viz";
+        if (paused) {
+            title += " [PAUSED]";
+        }
+        title += " | DT=" + std::to_string(emulator.delayTimer) +
+                 " ST=" + std::to_string(emulator.soundTimer);
         SDL_SetWindowTitle(window, title.c_str());
         renderDisplay(renderer, emulator);
         SDL_Delay(16);
