@@ -131,16 +131,23 @@ void Chip8::executeInstruction() {
                 display.fill(0);
                 if (trace) std::cout << "Executing: CLS\n";
             } else if (opcode == 0x00EE) {
-                sp--;
-                pc = stack[sp];
-                if (trace) {
-                    std::cout << "Executing: RET\n";
-                    std::cout << "  -> pc now = " << pc << "\n";
+                if (sp > 0) {
+                    --sp;
+                    pc = stack[sp];
+                    if (trace) {
+                        std::cout << "Executing: RET\n";
+                        std::cout << "  -> pc now = " << pc << "\n";
+                    }
+                } else if (trace) {
+                    std::cout << "Executing: RET (stack underflow)\n";
                 }
             } else {
+                // 0NNN: legacy SYS — treat as jump to nnn (same effect as 1NNN on common ROMs)
+                pc = nnn;
                 if (trace) {
-                    std::cout << "Execute: unimplemented opcode 0x"
-                              << std::hex << opcode << std::dec << "\n";
+                    std::cout << "Executing: SYS 0x" << std::hex << nnn << std::dec
+                              << " (jump)\n";
+                    std::cout << "  -> pc now = " << pc << "\n";
                 }
             }
             break;
@@ -153,15 +160,22 @@ void Chip8::executeInstruction() {
             }
             break;
 
-        case 0x2:
-            stack[sp] = pc;
-            sp++;
+        case 0x2: {
+            const bool stackFull = (sp >= 16);
+            if (!stackFull) {
+                stack[sp] = pc;
+                sp++;
+            }
             pc = nnn;
             if (trace) {
-                std::cout << "Executing: CALL 0x" << std::hex << nnn << std::dec << "\n";
-                std::cout << "  -> pc now = " << pc << "\n";
+                std::cout << "Executing: CALL 0x" << std::hex << nnn << std::dec;
+                if (stackFull) {
+                    std::cout << " (stack full; return addr not saved)";
+                }
+                std::cout << "\n  -> pc now = " << pc << "\n";
             }
             break;
+        }
 
         case 0x3:
             if (V[x] == kk) {
