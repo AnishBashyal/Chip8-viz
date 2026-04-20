@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (emulator.loadROM(romPath)) {
-        std::cout << "ROM loaded successfully.\n\n";
+        std::cout << "ROM loaded successfully: " << romPath << "\n\n";
 
         if (usingDummyROM) {
             uint8_t sprite[5] = {0xF0, 0x90, 0x90, 0x90, 0xF0};
@@ -173,7 +173,17 @@ int main(int argc, char* argv[]) {
             }
         }
     } else {
-        std::cout << "Failed to load ROM.\n";
+        std::cout << "Failed to load ROM: " << romPath << "\n";
+        std::cout << "Usage:\n";
+        std::cout << "  ./chip8                  # run built-in dummy ROM demo\n";
+        std::cout << "  ./chip8 path/to/rom.ch8  # run a specific ROM file\n";
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        if (audioEnabled) {
+            SDL_CloseAudioDevice(audioDevice);
+        }
+        SDL_Quit();
+        return 1;
     }
 
     bool running = true;

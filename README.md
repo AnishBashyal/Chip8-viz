@@ -22,8 +22,9 @@ To set up the project on a macOS or Linux system, you need to have a C++ compile
 
 ## How to Run the Project
 
-After successfully compiling the code, stay inside the `build` directory and run the executable with this command:
+After compiling, stay inside the `build` directory and run one of these:
 
-`./chip8`
+- `./chip8` (runs the built-in dummy ROM demo)
+- `./chip8 path/to/rom.ch8` (runs a specific Chip-8 ROM file)
 
-Currently, the program runs a built-in validation test. It automatically generates a dummy binary ROM file, loads it into the virtual memory at the correct `0x200` hardware offset, and prints the correctly fetched hexadecimal instructions to the terminal to prove the fetch cycle works.
+If ROM loading fails, the program prints the ROM path and usage examples so you can quickly correct the command.
