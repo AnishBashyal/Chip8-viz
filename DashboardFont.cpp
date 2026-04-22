@@ -68,6 +68,10 @@ const uint8_t* glyphForChar(char ch) {
             static constexpr uint8_t m[7] = {0x11, 0x1B, 0x15, 0x15, 0x11, 0x11, 0x11};
             return m;
         }
+        case 'N': {
+            static constexpr uint8_t n[7] = {0x11, 0x19, 0x15, 0x13, 0x11, 0x11, 0x11};
+            return n;
+        }
         case 'O': return kHexGlyph[0x0];
         case 'P': {
             static constexpr uint8_t p[7] = {0x1E, 0x11, 0x11, 0x1E, 0x10, 0x10, 0x10};
@@ -97,6 +101,10 @@ const uint8_t* glyphForChar(char ch) {
             static constexpr uint8_t v[7] = {0x11, 0x11, 0x11, 0x11, 0x11, 0x0A, 0x04};
             return v;
         }
+        case 'W': {
+            static constexpr uint8_t w[7] = {0x11, 0x11, 0x11, 0x15, 0x15, 0x1B, 0x11};
+            return w;
+        }
         case 'X': {
             static constexpr uint8_t x[7] = {0x11, 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x11};
             return x;
@@ -104,6 +112,14 @@ const uint8_t* glyphForChar(char ch) {
         case 'Y': {
             static constexpr uint8_t y[7] = {0x11, 0x11, 0x0A, 0x04, 0x04, 0x04, 0x04};
             return y;
+        }
+        case 'K': {
+            static constexpr uint8_t k[7] = {0x11, 0x12, 0x14, 0x18, 0x14, 0x12, 0x11};
+            return k;
+        }
+        case 'J': {
+            static constexpr uint8_t j[7] = {0x1F, 0x02, 0x02, 0x02, 0x12, 0x12, 0x0C};
+            return j;
         }
         case '0': return kHexGlyph[0x0];
         case '1': return kHexGlyph[0x1];
@@ -118,6 +134,10 @@ const uint8_t* glyphForChar(char ch) {
         case ':': return kColon;
         case '-': return kDash;
         case '+': return kPlus;
+        case '/': {
+            static constexpr uint8_t slash[7] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x00, 0x00};
+            return slash;
+        }
         case ' ': return kBlank;
         default: return kBlank;
     }

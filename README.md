@@ -60,6 +60,20 @@ For quick usage help:
 ./build/chip8 --help
 ```
 
+## Standalone macOS package
+
+I also provide a standalone macOS app package at the repo root:
+
+- `Chip8Standalone-macos.zip`
+
+To run it:
+
+1. Unzip `Chip8Standalone-macos.zip`
+2. Open `Chip8Standalone.app`
+3. Use the in-app menu to pick a game
+
+This is the submission-friendly package for users who do not want to build from source.
+
 ## Controls
 
 ### Chip-8 keypad mapping
