@@ -72,7 +72,7 @@ To run it:
 2. Open `Chip8Standalone.app`
 3. Use the in-app menu to pick a game
 
-This is the submission-friendly package for users who do not want to build from source.
+This is the compact package for users who do not want to build from source.
 
 ## Controls
 
