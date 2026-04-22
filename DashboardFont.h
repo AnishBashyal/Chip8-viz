@@ -6,3 +6,4 @@
 void drawHexDigit(SDL_Renderer* renderer, int px, int py, int zoom, unsigned nibble);
 void drawHexByte(SDL_Renderer* renderer, int px, int py, int zoom, uint8_t v);
 void drawHexWord(SDL_Renderer* renderer, int px, int py, int zoom, uint16_t v);
+void drawText(SDL_Renderer* renderer, int px, int py, int zoom, const char* text);

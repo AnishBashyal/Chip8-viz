@@ -37,8 +37,9 @@ static void renderDashboard(SDL_Renderer* renderer, const Chip8& emulator, int p
     SDL_SetRenderDrawColor(renderer, 55, 62, 82, 255);
     SDL_RenderDrawRect(renderer, &panel);
 
-    const int z = 2;
-    const int tx = panelX + 8;
+    const int labelZ = 1;
+    const int valueZ = 2;
+    const int tx = panelX + 10;
     int ty = 10;
 
     auto hline = [&](int y) {
@@ -46,38 +47,68 @@ static void renderDashboard(SDL_Renderer* renderer, const Chip8& emulator, int p
         SDL_RenderDrawLine(renderer, panelX + 6, y, panelX + kPanelPxW - 6, y);
     };
 
-    SDL_SetRenderDrawColor(renderer, 140, 150, 175, 255);
+    // Header
+    SDL_SetRenderDrawColor(renderer, 150, 162, 188, 255);
+    drawText(renderer, tx, ty, labelZ, "CPU STATE");
+    ty += 10;
     hline(ty);
     ty += 6;
-    SDL_SetRenderDrawColor(renderer, 220, 228, 245, 255);
-    // Rows: PC, I, SP, last opcode, DT ST, then V0–V7 | V8–VF (see chip8 --help)
-    drawHexWord(renderer, tx, ty, z, emulator.pc);
-    ty += 20;
-    drawHexWord(renderer, tx, ty, z, emulator.I);
-    ty += 20;
-    drawHexByte(renderer, tx, ty, z, emulator.sp);
-    ty += 20;
-    drawHexWord(renderer, tx, ty, z, emulator.opcode);
-    ty += 20;
-    drawHexByte(renderer, tx, ty, z, emulator.delayTimer);
-    drawHexByte(renderer, tx + 16 * z, ty, z, emulator.soundTimer);
-    ty += 24;
-    hline(ty);
-    ty += 8;
 
+    // Core rows
+    auto drawRow16 = [&](const char* label, uint16_t value) {
+        SDL_SetRenderDrawColor(renderer, 155, 168, 193, 255);
+        drawText(renderer, tx, ty + 2, labelZ, label);
+        SDL_SetRenderDrawColor(renderer, 232, 238, 250, 255);
+        drawHexWord(renderer, tx + 42, ty, valueZ, value);
+        ty += 18;
+    };
+    auto drawRow8 = [&](const char* label, uint8_t value, int xoff) {
+        SDL_SetRenderDrawColor(renderer, 155, 168, 193, 255);
+        drawText(renderer, tx + xoff, ty + 2, labelZ, label);
+        SDL_SetRenderDrawColor(renderer, 232, 238, 250, 255);
+        drawHexByte(renderer, tx + xoff + 18, ty, valueZ, value);
+    };
+
+    drawRow16("PC", emulator.pc);
+    drawRow16("I", emulator.I);
+    drawRow8("SP", emulator.sp, 0);
+    ty += 18;
+    drawRow16("OP", emulator.opcode);
+    drawRow8("DT", emulator.delayTimer, 0);
+    drawRow8("ST", emulator.soundTimer, 92);
+    ty += 20;
+
+    hline(ty);
+    ty += 6;
+    SDL_SetRenderDrawColor(renderer, 150, 162, 188, 255);
+    drawText(renderer, tx, ty, labelZ, "REGISTERS");
+    ty += 10;
+    hline(ty);
+    ty += 6;
+
+    // Registers V0..VF
     for (int row = 0; row < 8; ++row) {
-        int y = ty + row * 16;
-        drawHexByte(renderer, tx, y, z, emulator.V[static_cast<size_t>(row)]);
-        drawHexByte(renderer, tx + 88, y, z, emulator.V[static_cast<size_t>(row + 8)]);
+        int y = ty + row * 14;
+        SDL_SetRenderDrawColor(renderer, 140, 152, 178, 255);
+        drawText(renderer, tx, y + 2, labelZ, "V");
+        drawHexDigit(renderer, tx + 8, y + 1, labelZ, static_cast<unsigned>(row));
+        drawText(renderer, tx + 62, y + 2, labelZ, "V");
+        drawHexDigit(renderer, tx + 70, y + 1, labelZ, static_cast<unsigned>(row + 8));
+        SDL_SetRenderDrawColor(renderer, 224, 232, 248, 255);
+        drawHexByte(renderer, tx + 18, y, valueZ, emulator.V[static_cast<size_t>(row)]);
+        drawHexByte(renderer, tx + 80, y, valueZ, emulator.V[static_cast<size_t>(row + 8)]);
     }
 
     // Quirk indicators (bottom): mem I+=, shift Vy
-    ty = kPlayPxH - 20;
+    ty = kPlayPxH - 24;
     SDL_SetRenderDrawColor(renderer, 90, 95, 110, 255);
     SDL_Rect legM = {tx, ty, 8, 8};
-    SDL_Rect legS = {tx + 20, ty, 8, 8};
+    SDL_Rect legS = {tx + 72, ty, 8, 8};
     SDL_RenderDrawRect(renderer, &legM);
     SDL_RenderDrawRect(renderer, &legS);
+    SDL_SetRenderDrawColor(renderer, 150, 162, 188, 255);
+    drawText(renderer, tx + 12, ty + 1, labelZ, "MEM+");
+    drawText(renderer, tx + 84, ty + 1, labelZ, "SHVY");
     if (emulator.quirkMemoryIncrementI) {
         SDL_SetRenderDrawColor(renderer, 80, 200, 120, 255);
         SDL_Rect fill = {tx + 1, ty + 1, 6, 6};
@@ -85,7 +116,7 @@ static void renderDashboard(SDL_Renderer* renderer, const Chip8& emulator, int p
     }
     if (emulator.quirkShiftVY) {
         SDL_SetRenderDrawColor(renderer, 230, 190, 80, 255);
-        SDL_Rect fill = {tx + 21, ty + 1, 6, 6};
+        SDL_Rect fill = {tx + 73, ty + 1, 6, 6};
         SDL_RenderFillRect(renderer, &fill);
     }
 }
