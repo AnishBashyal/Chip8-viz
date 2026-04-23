@@ -18,11 +18,14 @@ My goal is both correctness and visibility: I can run games and also see interna
 - CMake
 - SDL2 (video, events, audio)
 
+(Make sure you have homebrew installed for required installations)
+
 ## Build
 
 From project root:
 
 ```bash
+brew install cmake sdl2
 mkdir -p build
 cmake -S . -B build
 cmake --build build
